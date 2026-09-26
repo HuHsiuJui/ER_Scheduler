@@ -1,0 +1,11 @@
+[
+  {"nurse_id":"D001", "annual_opening":80, "comp_opening":5.07,
+   "overtime_choice":"未選擇", "cycle_verified":true,
+   "regular_rest_remaining":0, "additional_leave_hours":8,
+   "comp_consent":"未確認", "annual_asked":false, "annual_consent":"未確認",
+   "opening_verified":false, "entries_verified":false},
+  {"nurse_id":"E001", "annual_opening":32, "comp_opening":16,
+   "overtime_choice":"轉補休", "cycle_verified":false,
+   "regular_rest_remaining":null, "additional_leave_hours":0}
+]
+
