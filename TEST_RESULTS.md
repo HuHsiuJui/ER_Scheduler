@@ -1,21 +1,25 @@
-# 本次驗證紀錄
+# 驗證紀錄
 
-日期：2026-09-14（Asia/Taipei）
+日期：2026-09-28（Asia/Taipei）
 
-環境：Windows、Python 3.13、NumPy 2.3.3、SciPy 1.18.0、openpyxl 3.1.5。
+環境：Windows 11、Python 3.13.7、NumPy 2.3.3、SciPy 1.18.0、openpyxl 3.1.5。
+
+本次從 `7f11f7ffbf1e7e7baedb2a6aa3b366bc56370127` 修訂後重跑，更新原 2026-09-14 的紀錄。測試使用虛構資料；Google 相關測試以 mock 模擬，不連線至真實機構。
 
 ## 已執行
 
-- `python -m unittest discover -s tests -v`：25 項測試全部通過。
+- `python -m unittest discover -s tests -v`：30 項測試全部通過（原 25 項，加上 5 項來源／診斷回歸測試）。
 - `python main.py --demo --leave-input examples/leave_balances.json`：成功輸出研究展示 Excel 與 JSON 報告。
 - `python -m compileall -q main.py scheduler_core.py leave_accounting.py workbook_export.py tests`：通過。
 - Excel 匯出後回讀，逐人逐日比對班別，與求解結果一致。
 
 ## 匿名範例結果
 
-38 名虛構人員，30 天，共 570 筆出勤配置。示範模型 16,312 個變數、44,316 個約束，求解回報 OPTIMAL。排班約束錯誤 0，警告 0；示範跨班與加班均為 0。
+38 名虛構人員，30 天，共 570 筆出勤配置。示範模型 16,312 個變數、44,316 個約束，求解回報 OPTIMAL。排班約束錯誤 0，排班驗證警告 0；示範跨班與加班均為 0。
 
 Google 來源檢查仍保留 2 項錯誤（示範不具 LIVE 來源），`clinical_publishable=false`。這是有意保留的來源保護，不將本機示範偽裝成院方正式資料。此固定預假的簡化範例不是臨床效益測試，也不是複雜問題效能基準。
+
+休假帳本另有 7 則流程提醒（D001：4 則、E001：3 則），不包含於排班驗證警告數。範例未提供完整核定與本人同意，故不扣新增假，兩人的正式餘額均為 null；這是流程測試結果，不是漏填的研究數據。Excel 夜班津貼為固定費率公式試算，本次未驗證院方費率或薪資核定，也未驗證試算表軟體重新計算公式後的金額。
 
 ## 代表性反例
 
@@ -28,7 +32,20 @@ Google 來源檢查仍保留 2 項錯誤（示範不具 LIVE 來源），`clinic
 - 未取得之預估加班補休：可列試算，不能拿來支付本次休假。
 - 一般休假尚有餘額／週期未核定：不自動扣補休。
 
+## 本次來源與診斷回歸
+
+- 模擬 Google 成功讀取與權限不足：可取得試算表物件，拒絕存取時提供 service account email；不再呼叫缺失的函式。
+- 機構來源 ID 為空：在驗證憑證或連線前明確拒絕，維持預設停用。
+- 憑證缺少 email：回報可辨識的輸入錯誤。
+- 求解時限用盡：建議文字不將未取得可行解判定為數學無解。
+- 本機提供帶教累積：來源記錄不再聲稱來自未讀取的 `Nurses.xlsx`。
+
+## 全庫內容複查
+
+範圍為 `main` 基準版本的全部 11 個追蹤檔案及本次修正後的同一組檔案：`.gitignore`、`README.md`、`RESEARCH_STATEMENT.md`、`TEST_RESULTS.md`、`examples/leave_balances.json`、`leave_accounting.py`、`main.py`、`requirements.txt`、`scheduler_core.py`、`tests/test_portfolio.py`、`workbook_export.py`。不包含其他分支、Git 歷史、私人外部資料或被忽略的執行產物。
+
+姓名已統一為胡修睿，原有編輯指示已改為專案說明。另修正 AI 使用、研究範圍、離線／LIVE 流程與津貼試算的描述，移除不存在的依賴檔案指引。空白機構設定、未確認同意、未知餘額與待補人力各有程式用途，保留原本狀態。此次內容掃描不等同所有核心分支的功能驗證。
+
 ## 尚未驗證
 
-真實 Google 來源整合、所有既有情境分支、完整四週例休／國假自動分類、臨床正式使用、不同院制及長期人力成效。未做壓力測試、倫理審查或薪資核定驗證。申請資料不可將以上未驗證項目寫成已完成成果。
-
+真實 Google 來源整合、所有既有情境分支、完整四週例休／國假自動分類、不同院制與長期人力成效仍未驗證。本次也未進行壓力測試、倫理審查或薪資核定驗證，結果限於上述測試案例。

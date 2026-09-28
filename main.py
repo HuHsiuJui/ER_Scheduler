@@ -129,7 +129,7 @@ def parse_input(data):
 def run(data):
     nurses, requests, boundary, training, config = parse_input(data)
     fingerprint = hashlib.sha256(json.dumps(data,sort_keys=True,ensure_ascii=False).encode()).hexdigest()
-    audit = core.GoogleSourceAudit('LOCAL', '研究示範/待核對資料', 'LOCAL', config.year, config.month,
+    audit = core.GoogleSourceAudit('LOCAL', '本機研究審查資料（未經 LIVE 來源驗證）', 'LOCAL', config.year, config.month,
         len(nurses), 0, fingerprint, len(nurses), len(requests), 'REVIEW', 'LOCAL_REVIEW_JSON', False)
     previous = core.PreviousRosterAudit('LOCAL','本機提供跨月資料','LOCAL',
         (date(config.year,config.month,1)-timedelta(days=1)).year,
@@ -218,4 +218,3 @@ def main(argv=None):
 
 if __name__=='__main__':
     raise SystemExit(main())
-

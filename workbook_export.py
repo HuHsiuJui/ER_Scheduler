@@ -46,7 +46,8 @@ def export_review(path,result,requests,report,ledger):
         ['限制','四週假別須完整週期核定；不將 OFF 直接當超休；未確認不扣新增假。'],
         ['獨立判定','保留既有核心的年資或帶教累積判定，實際任用資格須由院方確認。'],
         ['最佳性','僅 OPTIMAL 表示目前設定之目標已達最佳；不代表所有相互衝突指標均各自最低。'],
-        ['津貼設定','E：未滿15班每班500，滿15班每班700；N：未滿15班每班700，滿15班每班900。'],
+        ['津貼設定','示範費率試算，非院方核定薪資或加班費。E：未滿15班每班500，滿15班每班700；N：未滿15班每班700，滿15班每班900。'],
+        ['餘額核定','正式欄位依輸入核定旗標與程式檢查產生，並非系統向院方查證；空白表示資料不足或仍有警示，不代表零。'],
         ['隱私','內附示範為虛構人員。不得將真實名單、病歷或憑證隨研究作品對外公開。'] ]:
         append(intro,row)
     days=core.month_days(result.year,result.month); amap=result.assignment_map()
@@ -129,4 +130,3 @@ def export_review(path,result,requests,report,ledger):
             expected=a.shift if a else ('特休' if (n.nurse_id,day) in annual else 'OFF')
             assert str(value).split('\n')[0]==expected, (n.nurse_id,day)
     check.close()
-

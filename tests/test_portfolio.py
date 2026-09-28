@@ -1,4 +1,8 @@
 import unittest
+import json
+from pathlib import Path
+from tempfile import TemporaryDirectory
+from unittest.mock import Mock, patch
 from dataclasses import replace
 from datetime import date
 from leave_accounting import LeaveInput, settle, cycle_for
@@ -138,5 +142,43 @@ class EngineRegressionTests(unittest.TestCase):
         self.assertEqual(targets[nurse.nurse_id],15)
 
 
-if __name__=='__main__': unittest.main()
+class IntegrationDiagnosticTests(unittest.TestCase):
+    def test_live_open_and_permission_diagnostic_offline(self):
+        with TemporaryDirectory() as directory:
+            credentials = Path(directory) / 'service_account.json'
+            credentials.write_text(json.dumps({'client_email': 'demo@example.invalid'}), encoding='utf-8')
+            client = Mock()
+            with patch.object(core, '_google_readonly_client', return_value=client):
+                sheet, sid = core._open_live_google_spreadsheet('demo-source', credentials, source_label='測試來源')
+                self.assertIs(sheet, client.open_by_key.return_value)
+                self.assertEqual(sid, 'demo-source')
+                client.open_by_key.side_effect = PermissionError('denied')
+                with self.assertRaisesRegex(PermissionError, 'demo@example.invalid'):
+                    core._open_live_google_spreadsheet('demo-source', credentials, source_label='測試來源')
 
+    def test_disabled_live_source_fails_before_authentication(self):
+        with patch.object(core, '_google_readonly_client') as client:
+            with self.assertRaisesRegex(ValueError, '未啟用'):
+                core._open_live_google_spreadsheet('', Path('unused.json'), source_label='測試來源')
+            client.assert_not_called()
+
+    def test_missing_account_email_is_a_controlled_error(self):
+        with TemporaryDirectory() as directory:
+            credentials = Path(directory) / 'service_account.json'
+            credentials.write_text('{}', encoding='utf-8')
+            with self.assertRaisesRegex(ValueError, 'client_email'):
+                core._service_account_email(credentials)
+
+    def test_timeout_advice_does_not_claim_infeasibility(self):
+        advice = core.build_schedule_advice(solver_error='MILP不可行/未取得可行解: Time limit reached')
+        self.assertEqual(advice[0]['category'], '求解未取得可行解')
+        self.assertIn('逾時不等於已證明無解', advice[0]['recommendation'])
+
+    def test_training_source_does_not_claim_an_unread_workbook(self):
+        nurse = replace(parse_input(synthetic_input())[0][0], hire_date=date(2026,8,1), training_completed_seed=18)
+        state = core.load_training_state_canonical((nurse,), year=2026, month=9, interactive=False)[nurse.nurse_id]
+        self.assertIn('training_completed_seed', state.source)
+        self.assertNotIn('Nurses.xlsx', state.source)
+
+
+if __name__=='__main__': unittest.main()
