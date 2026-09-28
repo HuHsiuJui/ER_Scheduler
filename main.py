@@ -149,7 +149,7 @@ def run(data):
         solver_status=result.solver_status, input_sha256=fingerprint, result_sha256=result.result_sha256,
         hard_errors=errors, schedule_constraint_errors=clinical,
         warnings=[asdict(i) for i in validation.warnings], metrics=dict(result.solver_metrics),
-        notice='僅研究/人工審查，不是已核定正式班表；未執行四週休假合法性認證。')
+        notice='供研究展示與人工審查；正式使用前需另行核定資料、班表與完整四週休假規則。')
     return result, requests, report
 
 
@@ -165,12 +165,12 @@ def main(argv=None):
     for stream in (sys.stdout, sys.stderr):
         if hasattr(stream, 'reconfigure'):
             stream.reconfigure(encoding='utf-8')
-    parser = argparse.ArgumentParser(description='急診護理排班研究專案（匿名展示／本機審查）')
+    parser = argparse.ArgumentParser(description='急診護理排班研究專案（虛構資料示範／本機審查）')
     parser.add_argument('--demo',action='store_true',help='使用 38 人完全虛構資料')
     parser.add_argument('--input',type=Path,help='本機已整理之 JSON 輸入')
     parser.add_argument('--leave-input',type=Path,help='逐人餘額與本人意願 JSON')
     parser.add_argument('--output-dir',type=Path,default=BASE/'results')
-    parser.add_argument('--write-demo-input',type=Path,help='只建立可修改的匿名輸入範例')
+    parser.add_argument('--write-demo-input',type=Path,help='建立可修改的虛構資料範例，不執行求解')
     args = parser.parse_args(argv)
     if args.write_demo_input:
         if args.write_demo_input.exists(): parser.error('目的檔已存在，請使用新檔名')
@@ -201,11 +201,11 @@ def main(argv=None):
         report['assignments'] = [asdict(a) for a in result.assignments]
         (out/'report.json').write_text(json.dumps(report,default=json_default,ensure_ascii=False,indent=2),encoding='utf-8')
         if report['schedule_constraint_errors']:
-            print('存在排班硬條件錯誤，僅輸出診斷，禁止輸出班表。',flush=True)
+            print('排班未通過硬條件檢查，已輸出診斷報告，未產生班表。',flush=True)
             return 2
         from workbook_export import export_review
         export_review(out/'研究展示班表.xlsx',result,requests,report,ledger)
-        print(f"完成：{out}\n求解狀態：{result.solver_status}；研究展示，不作正式發布。",flush=True)
+        print(f"完成：{out}\n求解狀態：{result.solver_status}；用途：研究展示與人工審查。",flush=True)
         return 0
     except (ValueError,RuntimeError,KeyError,TypeError,OSError) as exc:
         (out/'failure.json').write_text(json.dumps({'status':'NO_ROSTER','reason':str(exc),

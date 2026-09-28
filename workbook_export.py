@@ -38,9 +38,9 @@ def style(sheet,header_row=1):
 
 def export_review(path,result,requests,report,ledger):
     if report['schedule_constraint_errors']:
-        raise ValueError('有排班硬錯誤，禁止輸出班表')
+        raise ValueError('排班未通過硬條件檢查，無法輸出班表')
     wb=Workbook(); intro=wb.active; intro.title='閱讀說明'
-    for row in [ ['項目','內容'],['用途','研究展示／人工審查，不是核准正式班表'],
+    for row in [ ['項目','內容'],['用途','供研究展示與人工審查，正式使用前須經院方核定。'],
         ['資料模式',report['mode']],['求解狀態',result.solver_status],
         ['輸入指紋',report['input_sha256']],['結果指紋',result.result_sha256],
         ['限制','四週假別須完整週期核定；不將 OFF 直接當超休；未確認不扣新增假。'],
@@ -116,7 +116,7 @@ def export_review(path,result,requests,report,ledger):
     issues=wb.create_sheet('檢查與限制'); append(issues,['類型','代碼','說明'])
     for group in ['hard_errors','warnings']:
         for item in report[group]: append(issues,[group,item['code'],item['message']])
-    append(issues,['限制','LOCAL_REVIEW','本機輸入不能通過 LIVE Google 正式來源檢查，保留原始來源錯誤，不偽造 PASS。'])
+    append(issues,['限制','LOCAL_REVIEW','本次使用本機資料，未經 LIVE Google 來源驗證；來源檢查結果保留於報告。'])
     for ws in [intro,support,allowance,balance,questions,issues]: style(ws)
     intro.column_dimensions['B'].width=105; issues.column_dimensions['C'].width=105
     balance.column_dimensions['J'].width=80; questions.column_dimensions['H'].width=80
