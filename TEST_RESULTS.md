@@ -1,5 +1,7 @@
 # 驗證紀錄
 
+更新：2026-10-12 核心截斷修復後已重新驗證，30 項測試、語法編譯、示範求解及 Excel 回讀比對均通過，詳見 [REPAIR_VERIFICATION.md](REPAIR_VERIFICATION.md)。下方保留 2026-09-28 歷史紀錄；該紀錄不代表修復前的缺損 GitHub 快照可執行。
+
 日期：2026-09-28（Asia/Taipei）
 
 環境：Windows 11、Python 3.13.7、NumPy 2.3.3、SciPy 1.18.0、openpyxl 3.1.5。
